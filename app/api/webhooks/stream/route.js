@@ -1,6 +1,7 @@
 // app/api/webhooks/stream/route.js
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "@/lib/prisma";
+import zlib from "zlib";
 
 export async function POST(request) {
   const body = await request.json();
@@ -98,9 +99,12 @@ export async function POST(request) {
       // 1. Download JSONL from Stream CDN
       console.log(`[stream-webhook] Downloading transcript from Stream CDN...`);
       const transcriptRes = await fetch(transcriptUrl);
-      const transcriptText = await transcriptRes.text();
+      const arrayBuffer = await transcriptRes.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const decompressed = zlib.gunzipSync(buffer);
+      const transcriptText = decompressed.toString("utf-8");
       console.log(
-        `[stream-webhook] Transcript downloaded (${transcriptText.length} chars)`
+        `[stream-webhook] Transcript downloaded and decompressed (${transcriptText.length} chars)`
       );
 
       // 2. Parse JSONL into readable conversation
