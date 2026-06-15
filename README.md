@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🚀 Prept — Peer-to-Peer Mock Interview Platform
 
-## Getting Started
+Prept is a state-of-the-art, peer-to-peer technical mock interview platform connecting **Interviewees** (candidates) with **Interviewers** (industry experts). It features a premium, interactive UI with seamless HD video calling, live chat, real-time AI assistance, and automatic post-interview feedback reports.
 
-First, run the development server:
+---
 
+## ✨ Key Features
+
+- **🎯 Double-Sided Onboarding**: Users can register either as a Candidate (practicing interviews) or as an Interviewer (conducting sessions and earning credits).
+- **🗓️ Slot-Based Scheduling**: Interviewers set their availability once. Candidates can browse, select, and book slots in one click using their subscription credits.
+- **📹 HD Video Calls & Chat**: High-quality video rooms and persistent real-time chat powered by **GetStream Video & Chat SDK**.
+- **🤖 Live AI Co-Pilot**: Interviewers get a panel to generate custom technical questions (Frontend, Backend, System Design, DSA, etc.) on-demand during a live call.
+- **📊 Automatic AI Feedback**: When a recorded call ends, the transcript is downloaded, decompressed, and evaluated by **Gemini 2.5 Flash-Lite** to compile a detailed candidate performance report.
+- **💳 Credit & Withdrawal System**: Integrated payment plan tables. Experts earn credits for completed sessions and can submit cash-out requests, which notify the admin via **Resend & React-Email**.
+- **🔒 Shield & Security**: Protected using **Arcjet** for bot detection, request shielding, and rate-limiting on booking/withdrawal operations.
+
+---
+
+## 🛠️ Technology Stack
+
+- **Framework**: Next.js 16 (App Router), React 19
+- **Styling**: Tailwind CSS, Framer Motion
+- **Authentication**: Clerk (Auth & Subscription plans)
+- **Database & ORM**: PostgreSQL, Prisma ORM
+- **Video & Messaging**: GetStream SDK
+- **Artificial Intelligence**: Google Generative AI (`gemini-2.5-flash-lite`)
+- **Security**: Arcjet
+- **Emails**: Resend & React-Email
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone & Install Dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Set Up Environment Variables
+Create a `.env` file in the root directory and add the following keys:
+```env
+# Database
+DATABASE_URL="postgresql://..."
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
+CLERK_SECRET_KEY="sk_test_..."
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Stream API
+NEXT_PUBLIC_STREAM_API_KEY="..."
+STREAM_SECRET_KEY="..."
 
-## Learn More
+# Google Gemini API
+GEMINI_API_KEY="..."
 
-To learn more about Next.js, take a look at the following resources:
+# Arcjet Security Key
+ARCJET_KEY="ajkey_..."
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Resend Mail Credentials
+RESEND_API_KEY="..."
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# App URL Configuration
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+ADMIN_PAYOUT_PASSWORD="your-secure-admin-password"
+```
 
-## Deploy on Vercel
+### 3. Initialize the Database
+```bash
+npx prisma generate
+npx prisma db push
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 4. Run the Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## ⚡ Webhooks & Local Testing
+
+### Local Simulation (Recommended for UI Testing)
+To instantly complete a booked session and generate an AI review without setting up a real call:
+1. Open Prisma Studio (`npx prisma studio`), locate the `Booking` table, and copy the `id` of your booked session.
+2. Paste this ID into the `BOOKING_ID` constant in [prisma/seed.js](file:///c:/Users/DELL/OneDrive/Desktop/Prep/prept/prisma/seed.js#L13).
+3. Run the seed script:
+   ```bash
+   node prisma/seed.js
+   ```
+
+### Live Recording & Webhooks (production or ngrok)
+1. Expose your server using ngrok:
+   ```bash
+   npx ngrok http 3000
+   ```
+2. In the **GetStream Dashboard**, set the Webhook URL to:
+   `https://<your-ngrok-subdomain>.ngrok-free.app/api/webhooks/stream`
+3. Under the **Webhook Event Types**, ensure **`call.transcription_ready`** and **`call.recording_ready`** are checked.
+4. Join the call, click **Start Recording**, speak, stop the recording, and leave the call. Stream will send the recording/transcript webhook which triggers the AI generator.
+
+---
+
+## 🚢 Deploying to Vercel
+
+1. Push your project to GitHub.
+2. Import the repository into Vercel.
+3. Configure all environment variables on Vercel's dashboard. Set `NEXT_PUBLIC_APP_URL` to your Vercel deployment URL (e.g. `https://your-project.vercel.app`).
+4. Click **Deploy**.
+5. Update your **GetStream Webhook URL** and your **Clerk Allowed Redirect Origins** to point to your live Vercel domain.
